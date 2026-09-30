@@ -52,7 +52,7 @@ def intro(quiet):
         print("  |           |   ô| ||                                            ")
         print("  |___________|   ô| ||                                            ")
         print("  | ||/.´---.||    | ||      「 pentesting tool that made          ")
-        print("  |-||/_____\||-.  | |´         dumpster diving obsolete‥ 」       ")
+        print("  |-||/_____\\||-.  | |´         dumpster diving obsolete‥ 」       ")
         print("  |_||=L==H==||_|__|/                                              ")
         print("                                                                   ")
         print("     (ASCII art by                                                 ")

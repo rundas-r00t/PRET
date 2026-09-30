@@ -33,7 +33,7 @@ class pjl(printer):
             if wait:
                 # use random token as delimiter PJL responses
                 str_recv = self.recv(
-                    "(@PJL ECHO\s+)?" + token + ".*$", wait, True, binary
+                    r"(@PJL ECHO\s+)?" + token + ".*$", wait, True, binary
                 )
                 if self.status:
                     # get status messages and remove them from received buffer
@@ -82,10 +82,10 @@ class pjl(printer):
         codes = {}
         messages = {}
         # get status codes
-        for (num, code) in re.findall("CODE(\d+)?\s*=\s*(\d+)", str_stat):
+        for (num, code) in re.findall(r"CODE(\d+)?\s*=\s*(\d+)", str_stat):
             codes[num] = code
         # get status messages
-        for (num, mstr) in re.findall('DISPLAY(\d+)?\s*=\s*"(.*)"', str_stat):
+        for (num, mstr) in re.findall(r'DISPLAY(\d+)?\s*=\s*"(.*)"', str_stat):
             messages[num] = mstr
         # show codes and messages
         for num, code in list(codes.items()):
@@ -100,7 +100,7 @@ class pjl(printer):
     # parse PJL file errors
     def fileerror(self, str_recv):
         self.error = None
-        for code in re.findall("FILEERROR\s*=\s*(\d+)", str_recv):
+        for code in re.findall(r"FILEERROR\s*=\s*(\d+)", str_recv):
             # file errors are 300xx codes
             code = "3" + code.zfill(4)
             for error in codebook().get_errors(code):
@@ -126,7 +126,7 @@ class pjl(printer):
     # check if remote file exists
     def file_exists(self, path):
         str_recv = self.cmd('@PJL FSQUERY NAME="' + path + '"', True, False)
-        size = re.findall("TYPE\s*=\s*FILE\s+SIZE\s*=\s*(\d*)", str_recv)
+        size = re.findall(r"TYPE\s*=\s*FILE\s+SIZE\s*=\s*(\d*)", str_recv)
         # return file size
         return conv().int(item(size, c.NONEXISTENT))
 
@@ -137,7 +137,7 @@ class pjl(printer):
     def complete_rfiles(self, text, line, begidx, endidx, path=""):
         # get path from line
         if c.SEP in line:
-            path = posixpath.dirname(re.split("\s+", line, 1)[-1:][0])
+            path = posixpath.dirname(re.split(r"\s+", line, 1)[-1:][0])
         # get dirlist, set new remote path
         newpath = self.cwd + c.SEP + path
         if not self.options_rfiles or newpath != self.oldpath_rfiles:
@@ -166,7 +166,7 @@ class pjl(printer):
     def complete_rdirs(self, text, line, begidx, endidx, path=""):
         # get path from line
         if c.SEP in line:
-            path = posixpath.dirname(re.split("\s+", line, 1)[-1:][0])
+            path = posixpath.dirname(re.split(r"\s+", line, 1)[-1:][0])
         # get dirlist, set new remote path
         newpath = self.cwd + c.SEP + path
         if not self.options_rdirs or newpath != self.oldpath_rdirs:
@@ -195,13 +195,13 @@ class pjl(printer):
         list = {}
         for item in str_recv.splitlines():
             # get directories
-            dirname = re.findall("^(.*)\s+TYPE\s*=\s*DIR$", item)
+            dirname = re.findall(r"^(.*)\s+TYPE\s*=\s*DIR$", item)
             if dirname and (dirname[0] not in ("", ".", "..") or hidden):
                 sep = c.SEP if sep and dirname[0][-1:] != c.SEP else ""
                 list[dirname[0] + sep] = None
             # get files
-            filename = re.findall("^(.*)\s+TYPE\s*=\s*FILE", item)
-            filesize = re.findall("FILE\s+SIZE\s*=\s*(\d*)", item)
+            filename = re.findall(r"^(.*)\s+TYPE\s*=\s*FILE", item)
+            filesize = re.findall(r"FILE\s+SIZE\s*=\s*(\d*)", item)
             if filename and filesize and not dirsonly:
                 list[filename[0]] = filesize[0]
         return list
@@ -403,7 +403,7 @@ class pjl(printer):
             if var:
                 variables += var
             self.options_printenv = variables
-            match = re.findall("^(" + re.escape(arg) + ".*)\s+\[", item, re.I)
+            match = re.findall(r"^(" + re.escape(arg) + r".*)\s+\[", item, re.I)
             if match:
                 output().info(match[0])
 
@@ -687,7 +687,7 @@ class pjl(printer):
         output().raw("Retention for future print jobs: ", "")
         hold = self.do_info("variables", "^HOLD", False)
         output().info(
-            item(re.findall("=(.*)\s+\[", item(item(hold)))) or "NOT AVAILABLE"
+            item(re.findall(r"=(.*)\s+\[", item(item(hold)))) or "NOT AVAILABLE"
         )
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         # Sagemcom printers: @PJL SET RETAIN_JOB_BEFORE_PRINT = ON
@@ -708,7 +708,7 @@ class pjl(printer):
             )  # local copy of nvram
             # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             # ******* sampling: populate memspace with valid addresses ******
-            if len(re.split("\s+", arg, 1)) > 1:
+            if len(re.split(r"\s+", arg, 1)) > 1:
                 memspace = []
                 commands = ["@PJL RNVRAM ADDRESS=" +
                             str(n) for n in range(0, max, bs)]
@@ -722,7 +722,7 @@ class pjl(printer):
                     if not str_recv:
                         return
                     # collect valid memory addresses
-                    blocks = re.findall("ADDRESS\s*=\s*(\d+)", str_recv)
+                    blocks = re.findall(r"ADDRESS\s*=\s*(\d+)", str_recv)
                     for addr in blocks:
                         memspace += list(range(conv().int(addr),
                                          conv().int(addr) + bs))
@@ -747,7 +747,7 @@ class pjl(printer):
                     self.makedirs("nvram")  # create nvram directory
                 data = "".join(
                     [conv().chr(n)
-                     for n in re.findall("DATA\s*=\s*(\d+)", str_recv)]
+                     for n in re.findall(r"DATA\s*=\s*(\d+)", str_recv)]
                 )
                 file().append(lpath, data)  # write copy of nvram to disk
                 output().dump(data)  # print asciified output to screen
@@ -755,7 +755,7 @@ class pjl(printer):
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         # read nvram (single byte)
         elif arg.startswith("read"):
-            arg = re.split("\s+", arg, 1)
+            arg = re.split(r"\s+", arg, 1)
             if len(arg) > 1:
                 arg, addr = arg
                 output().info(self.cmd("@PJL RNVRAM ADDRESS=" + addr))
@@ -764,7 +764,7 @@ class pjl(printer):
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         # write nvram (single byte)
         elif arg.startswith("write"):
-            arg = re.split("\s+", arg, 2)
+            arg = re.split(r"\s+", arg, 2)
             if len(arg) > 2:
                 arg, addr, data = arg
                 self.cmd(

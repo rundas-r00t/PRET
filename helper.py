@@ -149,7 +149,7 @@ class output():
     def errmsg(self, msg, info=""):
         info = str(info).strip()
         if info:  # monkeypatch to make python error message less ugly
-            info = item(re.findall('Errno -?\d+\] (.*)', info),
+            info = item(re.findall(r'Errno -?\d+\] (.*)', info),
                         '') or info.splitlines()[-1]
             info = Style.RESET_ALL + Style.DIM + \
                 " (" + info.strip('<>') + ")" + Style.RESET_ALL
@@ -452,6 +452,7 @@ class conn(object):
             output().send(self.beautify(data), self.debug)
         # send data to device
         if self._file:
+            if not isinstance(data, bytes): data = data.encode()
             return os.write(self._file, data)
         # send data to socket
         elif self._sock:
@@ -466,7 +467,7 @@ class conn(object):
     def recv(self, bytes):
         # receive data from device
         if self._file:
-            data = os.read(self._file, bytes).decode()
+            data = os.read(self._file, bytes).decode('latin-1')
         # receive data from socket
         else:
             data = self._sock.recv(bytes).decode()
@@ -597,9 +598,9 @@ class const():  # define constants
     EOF = EOL + '\x0c\x04'  # potential end of file chars
     DELIMITER = "DELIMITER"  # delimiter marking end of response
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PS_CATCH = '%%\[ (.*)\]%%'
-    PS_ERROR = '%%\[ Error: (.*)\]%%'
-    PS_FLUSH = '%%\[ Flushing: (.*)\]%%'
+    PS_CATCH = r'%%\[ (.*)\]%%'
+    PS_ERROR = r'%%\[ Error: (.*)\]%%'
+    PS_FLUSH = r'%%\[ Flushing: (.*)\]%%'
     PS_PROMPT = '>'  # TBD: could be derived from PS command 'prompt'
     PS_HEADER = '@PJL ENTER LANGUAGE = POSTSCRIPT\n%!\n'
     PS_GLOBAL = 'true 0 startjob pop\n'  # 'serverdict begin 0 exitserver'

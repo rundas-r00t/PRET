@@ -184,7 +184,7 @@ class printer(cmd.Cmd, object):
     # ------------------------[ loop <cmd> <arg1> <arg2> … ]--------------
     def do_loop(self, arg):
         "Run command for multiple arguments:  loop <cmd> <arg1> <arg2> …"
-        args = re.split("\s+", arg)
+        args = re.split(r"\s+", arg)
         if len(args) > 1:
             cmd = args.pop(0)
             for arg in args:
@@ -358,7 +358,7 @@ class printer(cmd.Cmd, object):
     def do_cd(self, arg):
         "Change remote working directory:  cd <path>"
         if not self.cpath(arg) or self.dir_exists(self.rpath(arg)):
-            if re.match("^[\." + c.SEP + "]+$", self.cpath(arg)):
+            if re.match(r"^[\." + c.SEP + "]+$", self.cpath(arg)):
                 output().raw("*** Congratulations, path traversal found ***")
                 output().chitchat("Consider setting 'traversal' instead of 'cd'.")
             self.set_cwd(arg)
@@ -493,7 +493,7 @@ class printer(cmd.Cmd, object):
     # ------------------------[ append <file> <string> ]------------------
     def do_append(self, arg):
         "Append to file:  append <file> <string>"
-        arg = re.split("\s+", arg, 1)
+        arg = re.split(r"\s+", arg, 1)
         if len(arg) > 1:
             path, data = arg
             rpath = self.rpath(path)
